@@ -7,19 +7,53 @@ var tokens;
 function parser(t){
     tokens = t;
     return semi();
+		/*BEG add*/
+		if(tokens.length > 0){
+			show("ast=", ast);
+			show("処理後tokens=", tokens);
+			error("tokensが余ってるよ！つまりどこかおかしいので終了")
+		}
+		return ast;
+		/*END add*/
 }
+
+/*BEG add*/
+function value(){
+	if(tokens.length == 0) return;
+
+	return tokens.shift();
+}
+
+function funccall(){
+	//関数名取得
+	var left = value();
+
+	//関数呼出のかっこ
+	var op;
+	while(op = accept(tokens, "(")){
+		var right = semi();
+
+		op += expect(tokens, ")");
+
+		left = {left, op, right};
+	}
+	return left;
+}
+/*END add*/
+
 
 //セミコロン
 function semi(){
     // 最初の print 文をパース
-    var left = callprint();
+    var left = funccall(); /*changed*/
 
     // セミコロンを処理しつつ、複数の print 文があれば続けてパースする
     var op;
     while(op = accept(tokens, ";")){
         // 次の print 文が存在する場合のみ右側をパース
-        var right = callprint();
-        if (!right) break;  // 右側が無い場合はループを終了
+        var right = funccall(); /*changed*/
+
+				/*deleted*/
 
         // 階層構造を構築
         left = {left, op, right};
@@ -27,6 +61,7 @@ function semi(){
     return left;
 }
 
+/*
 //♂関数呼び出しの構文解析
 function callprint(){
     if(tokens.length == 0) return;
@@ -53,3 +88,4 @@ function callprint(){
     // 新しいオブジェクト(tree構造でのノード)を作成
     return {left, op, right};
 }
+*/
