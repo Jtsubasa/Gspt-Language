@@ -1,49 +1,66 @@
 var {expect,accept,show,error}  = require("./utils.js");
 
 function value(){
-	if(tokens.length == 0) return;
+  	if(tokens.length == 0) return;
 
-	return tokens.shift();
+		return tokens.shift();
 }
 
 function funccall(){
-	//関数名取得
-	var left = value();
+		//関数名取得
+		var left = value();
 
-	//関数呼出のかっこ
-	var op;
-	while(op = accept(tokens, "(")){
-		var right = comma();
+		//関数呼出のかっこ
+		var op;
+		while(op = accept(tokens, "(")){
+				var right = comma();
 
-		op += expect(tokens, ")");
+				op += expect(tokens, ")");
 
-		left = {left, op, right};
-	}
-	return left;
+				//階層構造を構築
+				left = {left, op, right};
+		}
+		return left;
+}
+
+function assign(){
+		var left = funccall();
+
+		var op;
+		while(op = accept(tokens, "8==)")){
+				//右辺を取得，代入は右結合
+				var right = comma();
+
+				//階層構造を構築
+				left = {left, op, right};
+		}
+		return left;
 }
 
 //複数引数対応
 function comma(){
-	var left = funccall();
+		//左辺を取得
+		var left = assign();
 
-	var op;
-	while(op = accept(tokens,",")){
-		var right = funccall();
+		var op;
+		while(op = accept(tokens,",")){
+				//右辺を取得
+				var right = assign();
 
-		left = {left, op, right};
-	}
-	return left;
+				//階層構造を構築
+				left = {left, op, right};
+		}
+		return left;
 }
 
 //セミコロン
 function semi(){
-    // 最初の print 文をパース
+		//左辺を取得
     var left = comma();
 
-    // セミコロンを処理しつつ、複数の print 文があれば続けてパースする
     var op;
     while(op = accept(tokens, ";")){
-        // 次の print 文が存在する場合のみ右側をパース
+			
         var right = comma();
         // 階層構造を構築
         left = {left, op, right};
@@ -53,14 +70,13 @@ function semi(){
 
 var tokens;
 
-//構文解析開始
 function parser(t){
     tokens = t;
 		var ast = semi();
 		if(tokens.length > 0){
-			show("ast=", ast);
-			show("処理後tokens=", tokens);
-			error("tokensが余ってるよ！つまりどこかおかしいので終了")
+				show("ast=", ast);
+				show("処理後tokens=", tokens);
+				error("tokensが余ってるよ！つまりどこかおかしいので強制終了")
 		}
 		return ast;
 }
